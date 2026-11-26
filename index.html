@@ -73,7 +73,7 @@
       <div>
         <div style="display:flex; align-items:center;">
           <h1 class="title-h1">BTT Lawyers Pty Ltd — Practice Ledger</h1>
-          <span class="badge" id="syncStatus">Cloud Connected</span>
+          <span class="badge" id="syncStatus">Checking Sync...</span>
         </div>
         <p class="subtitle">Multi-Office Central Ledger (Preston • Werribee • ACT • Dandenong • Sydney)</p>
       </div>
@@ -154,7 +154,7 @@
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="14" style="text-align:center; padding:30px; color:#94a3b8;">No records found. Click "+ New Entry" above to add one.</td></tr>
+          <tr><td colspan="14" style="text-align:center; padding:30px; color:#94a3b8;">Loading records...</td></tr>
         </tbody>
       </table>
     </div>
@@ -392,16 +392,25 @@
       document.getElementById("previewFirmShare").textContent = fmt(firmShare);
     }
 
-    async function loadData() {
-      items = JSON.parse(localStorage.getItem("btt_practice_ledger")) || [];
-      renderTable();
-      updateEmpDropdown();
+    // Direct REST Headers formatted specifically for new sb_publishable keys
+    function getHeaders() {
+      return {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      };
+    }
 
+    async function loadData() {
+      const statusBadge = document.getElementById("syncStatus");
+      
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?select=*&order=date.desc`, {
+          method: "GET",
           headers: {
             "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY
           }
         });
 
@@ -409,14 +418,37 @@
           const data = await res.json();
           if (Array.isArray(data)) {
             items = data;
-            localStorage.setItem("btt_practice_ledger", JSON.stringify(items));
+            if (statusBadge) {
+              statusBadge.textContent = "Cloud Live (" + items.length + " entries)";
+              statusBadge.style.background = "#064e3b";
+              statusBadge.style.color = "#34d399";
+            }
             renderTable();
             updateEmpDropdown();
+            return;
+          }
+        } else {
+          const errText = await res.text();
+          console.error("Supabase API error:", res.status, errText);
+          if (statusBadge) {
+            statusBadge.textContent = "Cloud Sync Error (" + res.status + ")";
+            statusBadge.style.background = "#881337";
+            statusBadge.style.color = "#fda4af";
           }
         }
       } catch (e) {
-        console.warn("Using offline storage:", e);
+        console.error("Network fetch failed:", e);
+        if (statusBadge) {
+          statusBadge.textContent = "Offline Mode";
+          statusBadge.style.background = "#78350f";
+          statusBadge.style.color = "#fcd34d";
+        }
       }
+
+      // Fallback
+      items = JSON.parse(localStorage.getItem("btt_practice_ledger")) || [];
+      renderTable();
+      updateEmpDropdown();
     }
 
     function updateEmpDropdown() {
@@ -539,7 +571,7 @@
       const editId = document.getElementById("editId").value;
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
-      submitBtn.textContent = "Saving...";
+      submitBtn.textContent = "Saving to Cloud...";
 
       const row = {
         date: document.getElementById("fDate").value,
@@ -557,54 +589,56 @@
         comm: document.getElementById("fComm").value.trim()
       };
 
-      if (editId) {
-        const idx = items.findIndex(x => String(x.id) === String(editId));
-        if (idx !== -1) items[idx] = { ...items[idx], ...row };
-        fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${editId}`, {
-          method: "PATCH",
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal"
-          },
-          body: JSON.stringify(row)
-        }).catch(() => {});
-      } else {
-        const tempId = Date.now();
-        items.unshift({ id: tempId, ...row });
-        fetch(`${SUPABASE_URL}/rest/v1/ledger_entries`, {
-          method: "POST",
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal"
-          },
-          body: JSON.stringify(row)
-        }).catch(() => {});
-      }
+      try {
+        let res;
+        if (editId && !String(editId).startsWith("temp_")) {
+          res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${editId}`, {
+            method: "PATCH",
+            headers: getHeaders(),
+            body: JSON.stringify(row)
+          });
+        } else {
+          res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify(row)
+          });
+        }
 
-      localStorage.setItem("btt_practice_ledger", JSON.stringify(items));
-      submitBtn.disabled = false;
-      closeModal();
-      renderTable();
-      updateEmpDropdown();
+        if (!res.ok) {
+          const errDetail = await res.text();
+          alert("Supabase Cloud Error (" + res.status + "): " + errDetail);
+        } else {
+          // Success: reload fresh dataset from cloud
+          await loadData();
+          closeModal();
+        }
+      } catch (err) {
+        alert("Network connection error: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save Record";
+      }
     }
 
     async function delEntry(id) {
-      if (confirm("Delete this entry permanently?")) {
-        items = items.filter(x => String(x.id) !== String(id));
-        localStorage.setItem("btt_practice_ledger", JSON.stringify(items));
-        fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${id}`, {
-          method: "DELETE",
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      if (confirm("Delete this entry permanently for all offices?")) {
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${id}`, {
+            method: "DELETE",
+            headers: {
+              "apikey": SUPABASE_ANON_KEY,
+              "Authorization": "Bearer " + SUPABASE_ANON_KEY
+            }
+          });
+          if (!res.ok) {
+            alert("Delete failed on cloud: " + (await res.text()));
+          } else {
+            await loadData();
           }
-        }).catch(() => {});
-        renderTable();
-        updateEmpDropdown();
+        } catch (e) {
+          alert("Network error: " + e.message);
+        }
       }
     }
 
