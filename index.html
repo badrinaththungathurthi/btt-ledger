@@ -73,7 +73,7 @@
       <div>
         <div style="display:flex; align-items:center;">
           <h1 class="title-h1">BTT Lawyers Pty Ltd — Practice Ledger</h1>
-          <span class="badge" id="syncStatus">Checking Sync...</span>
+          <span class="badge" id="syncStatus">Connecting to Cloud...</span>
         </div>
         <p class="subtitle">Multi-Office Central Ledger (Preston • Werribee • ACT • Dandenong • Sydney)</p>
       </div>
@@ -154,7 +154,7 @@
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="14" style="text-align:center; padding:30px; color:#94a3b8;">Loading records...</td></tr>
+          <tr><td colspan="14" style="text-align:center; padding:30px; color:#94a3b8;">Loading records from cloud...</td></tr>
         </tbody>
       </table>
     </div>
@@ -354,7 +354,7 @@
 
   <script>
     const SUPABASE_URL = "https://vhmibukossxgnuotvjvg.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_T9W8-L2viJbPsy1ZaoX7Cw_Sbs4PBk2";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZobWlidWtvc3N4Z251b3R2anZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxNzIzNDQsImV4cCI6MjExMDc0ODM0NH0.2iJ8cxdNqmEgrNDqgkr_ThJ30XOlzqmwymIoQSeOVig";
 
     let items = [];
 
@@ -392,7 +392,6 @@
       document.getElementById("previewFirmShare").textContent = fmt(firmShare);
     }
 
-    // Direct REST Headers formatted specifically for new sb_publishable keys
     function getHeaders() {
       return {
         "apikey": SUPABASE_ANON_KEY,
@@ -408,10 +407,7 @@
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?select=*&order=date.desc`, {
           method: "GET",
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": "Bearer " + SUPABASE_ANON_KEY
-          }
+          headers: getHeaders()
         });
 
         if (res.ok) {
@@ -428,8 +424,8 @@
             return;
           }
         } else {
-          const errText = await res.text();
-          console.error("Supabase API error:", res.status, errText);
+          const errDetail = await res.text();
+          console.error("Supabase API error:", res.status, errDetail);
           if (statusBadge) {
             statusBadge.textContent = "Cloud Sync Error (" + res.status + ")";
             statusBadge.style.background = "#881337";
@@ -445,7 +441,7 @@
         }
       }
 
-      // Fallback
+      // Fallback only if network fails completely
       items = JSON.parse(localStorage.getItem("btt_practice_ledger")) || [];
       renderTable();
       updateEmpDropdown();
@@ -591,7 +587,7 @@
 
       try {
         let res;
-        if (editId && !String(editId).startsWith("temp_")) {
+        if (editId) {
           res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${editId}`, {
             method: "PATCH",
             headers: getHeaders(),
@@ -607,14 +603,13 @@
 
         if (!res.ok) {
           const errDetail = await res.text();
-          alert("Supabase Cloud Error (" + res.status + "): " + errDetail);
+          alert("Cloud Error (" + res.status + "): " + errDetail);
         } else {
-          // Success: reload fresh dataset from cloud
           await loadData();
           closeModal();
         }
       } catch (err) {
-        alert("Network connection error: " + err.message);
+        alert("Network error: " + err.message);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "Save Record";
@@ -626,10 +621,7 @@
         try {
           const res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${id}`, {
             method: "DELETE",
-            headers: {
-              "apikey": SUPABASE_ANON_KEY,
-              "Authorization": "Bearer " + SUPABASE_ANON_KEY
-            }
+            headers: getHeaders()
           });
           if (!res.ok) {
             alert("Delete failed on cloud: " + (await res.text()));
@@ -731,7 +723,7 @@
 
         return [
           r.date, `"${r.file_no||''}"`, `"${r.invoice_no||''}"`, `"${r.emp}"`, `"${r.loc}"`, `"${r.ref||''}"`, `"${r.client||''}"`,
-          amt, disb, `${splitPct}%`, solShare, firmShare, `"${r.barr||''}"`, `"${r.comm||''}"`
+          amt, disb, `${splitPct}%`, solShare, firmShare, `"${r.barr||''}"`, `"${r.comm||''}" exportCSV`
         ];
       });
 
