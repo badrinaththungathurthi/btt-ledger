@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTT Lawyers - Practice Financial Ledger & Payout Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; padding-bottom: 60px; }
+    
+    header { background-color: #0f172a; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 34px; height: 34px; background-color: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .title-h1 { font-size: 15px; font-weight: 700; }
+    .badge { background: #064e3b; color: #34d399; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(5,150,105,0.4); margin-left: 8px; }
+    .subtitle { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .btn-group { display: flex; gap: 8px; }
+    
+    .btn { padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: #4f46e5; color: white; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-secondary { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+    .btn-secondary:hover { background: #334155; }
+    .btn-emerald { background: #047857; color: white; }
+    .btn-emerald:hover { background: #065f46; }
+    
+    main { max-width: 1300px; margin: 24px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 20px; }
+    
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .kpi-card { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .kpi-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .kpi-val { font-size: 22px; font-weight: 900; margin-top: 4px; }
+    .kpi-sub { font-size: 11px; margin-top: 2px; }
+    
+    .filter-card { background: white; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .filter-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    input[type="text"], input[type="date"], input[type="number"], input[type="month"], select {
+      font-size: 12px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; outline: none;
+    }
+    input:focus, select:focus { border-color: #6366f1; background: white; }
+    
+    .table-container { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; white-space: nowrap; }
+    th { background: #f1f5f9; color: #475569; font-weight: 700; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; font-size: 11px; letter-spacing: 0.03em; }
+    td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    tr:hover td { background-color: #f8fafc; }
+    
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
+    .modal-box { background: white; width: 100%; max-width: 540px; border-radius: 14px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-header { background: #0f172a; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 11px; font-weight: 700; color: #475569; }
+    .calc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; text-align: center; }
+    
+    @media print {
+      body * { visibility: hidden !important; }
+      #rctiPrintArea, #rctiPrintArea * { visibility: visible !important; }
+      #rctiPrintArea { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 20px !important; background: white !important; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="no-print">
+    <div class="logo-area">
+      <div class="logo-icon">⚖️</div>
+      <div>
+        <div style="display:flex; align-items:center;">
+          <h1 class="title-h1">BTT Lawyers Pty Ltd — Practice Ledger</h1>
+          <span class="badge" id="syncStatus">Cloud Connected</span>
+        </div>
+        <p class="subtitle">Multi-Office Central Ledger (Preston • Werribee • ACT • Dandenong • Sydney)</p>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-emerald" onclick="openRCTIModal()">📄 Generate RCTI</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-primary" onclick="openModal()">+ New Entry</button>
+    </div>
+  </header>
+
+  <main class="no-print">
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Gross Client Receipts</div>
+        <div class="kpi-val" id="kpiGross" style="color:#0f172a;">$0.00</div>
+        <div class="kpi-sub" style="color:#059669;">Deposited in firm accounts</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Disbursements</div>
+        <div class="kpi-val" id="kpiDisb" style="color:#d97706;">$0.00</div>
+        <div class="kpi-sub" style="color:#64748b;">Counsel, court, ASIC fees</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Solicitor Earned Share</div>
+        <div class="kpi-val" id="kpiSolicitor" style="color:#2563eb;">$0.00</div>
+        <div class="kpi-sub" style="color:#64748b;">Calculated splits & draws</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Firm Net Retained</div>
+        <div class="kpi-val" id="kpiFirmShare" style="color:#047857;">$0.00</div>
+        <div class="kpi-sub" style="color:#64748b;">Gross - Disb - Payouts</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+      <div class="filter-inputs">
+        <input type="text" id="searchBox" oninput="renderTable()" placeholder="Search File #, Invoice #, client..." style="width:230px;" />
+        <select id="selEmp" onchange="renderTable()">
+          <option value="ALL">All Fee Earners</option>
+        </select>
+        <select id="selLoc" onchange="renderTable()">
+          <option value="ALL">All Offices</option>
+          <option value="Preston">Preston</option>
+          <option value="Werribee">Werribee</option>
+          <option value="Dandenong">Dandenong</option>
+          <option value="ACT">ACT</option>
+          <option value="Sydney">Sydney</option>
+          <option value="India">India</option>
+        </select>
+      </div>
+      <div style="font-size:12px; color:#64748b;">
+        Records: <strong id="recordCount" style="color:#0f172a;">0</strong>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>File #</th>
+            <th>Invoice #</th>
+            <th>Fee Earner</th>
+            <th>Office</th>
+            <th>Client / Matter</th>
+            <th style="text-align:right;">Received ($)</th>
+            <th style="text-align:right;">Disb ($)</th>
+            <th style="text-align:center;">Split %</th>
+            <th style="text-align:right; color:#1d4ed8; background:#eff6ff;">Solicitor Share</th>
+            <th style="text-align:right; color:#047857; background:#ecfdf5;">Firm Share</th>
+            <th>Payee / Counsel</th>
+            <th>Comments</th>
+            <th style="text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="14" style="text-align:center; padding:30px; color:#94a3b8;">No records found. Click "+ New Entry" above to add one.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Add/Edit Entry Modal -->
+  <div id="modal" class="modal-backdrop no-print">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Ledger Entry</h3>
+        <span onclick="closeModal()" style="cursor:pointer; font-size:16px;">✕</span>
+      </div>
+      <form id="entryForm" onsubmit="saveEntry(event)" class="modal-body">
+        <input type="hidden" id="editId" value="" />
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="fDate" required />
+          </div>
+          <div class="form-group">
+            <label>Office Location</label>
+            <select id="fLoc">
+              <option value="Preston">Preston</option>
+              <option value="Werribee">Werribee</option>
+              <option value="Dandenong">Dandenong</option>
+              <option value="ACT">ACT</option>
+              <option value="Sydney">Sydney</option>
+              <option value="India">India</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Matter / File Number</label>
+            <input type="text" id="fFileNo" placeholder="e.g. AB-1475, NS-1434" />
+          </div>
+          <div class="form-group">
+            <label>Invoice Number</label>
+            <input type="text" id="fInvoiceNo" placeholder="e.g. INV-2124" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fee Earner</label>
+            <input type="text" id="fEmp" placeholder="e.g. Parth, Monalisa, Abhi" required />
+          </div>
+          <div class="form-group">
+            <label>Referred By</label>
+            <input type="text" id="fRef" placeholder="e.g. BTT, VLA, Self" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Client Name / Funding Body</label>
+          <input type="text" id="fClient" placeholder="e.g. Victoria Legal Aid, PEXA, or Client Name" />
+        </div>
+
+        <div class="calc-box">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label style="color:#047857;">Received ($)</label>
+              <input type="number" step="0.01" id="fAmt" oninput="calculateSplitsLive()" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label style="color:#d97706;">Disbursement ($)</label>
+              <input type="number" step="0.01" id="fDisb" oninput="calculateSplitsLive()" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label style="color:#4f46e5;">Split %</label>
+              <input type="number" step="1" max="100" min="0" id="fSplitPct" oninput="calculateSplitsLive()" placeholder="50" />
+            </div>
+          </div>
+          <div class="preview-grid">
+            <div>
+              <span style="font-size:10px; color:#64748b; display:block;">Est. Solicitor Share</span>
+              <strong id="previewSolShare" style="color:#2563eb; font-size:13px;">$0.00</strong>
+            </div>
+            <div>
+              <span style="font-size:10px; color:#64748b; display:block;">Est. Firm Share</span>
+              <strong id="previewFirmShare" style="color:#047857; font-size:13px;">$0.00</strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label style="color:#64748b;">Manual Payout Override ($) <em style="font-weight:400;">(optional)</em></label>
+            <input type="number" step="0.01" id="fPayout" oninput="calculateSplitsLive()" placeholder="0.00" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Counsel / Payee</label>
+            <input type="text" id="fBarr" placeholder="e.g. Emma C Jeans, Court" />
+          </div>
+          <div class="form-group">
+            <label>Comments</label>
+            <input type="text" id="fComm" placeholder="e.g. Search fee, settlement draw" />
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" id="submitBtn" class="btn btn-primary">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RCTI Generator Modal -->
+  <div id="rctiModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:850px; max-height:90vh; display:flex; flex-direction:column;">
+      <div class="modal-header no-print">
+        <h3>Recipient Created Tax Invoice (RCTI)</h3>
+        <span onclick="closeRCTIModal()" style="cursor:pointer; font-size:16px;">✕</span>
+      </div>
+      
+      <div class="no-print" style="padding:12px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:space-between;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div>
+            <label style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; display:block;">Subcontractor</label>
+            <select id="rctiEmpSelect" onchange="generateRCTIPreview()"></select>
+          </div>
+          <div>
+            <label style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; display:block;">Month</label>
+            <input type="month" id="rctiMonth" onchange="generateRCTIPreview()" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="window.print()">🖨 Print / Save PDF</button>
+      </div>
+
+      <div id="rctiPrintArea" style="padding:28px; overflow-y:auto; color:#0f172a;">
+        <div style="display:flex; justify-content:space-between; border-bottom:2px solid #0f172a; padding-bottom:14px; margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:22px; font-weight:900;">BTT LAWYERS PTY LTD</h2>
+            <p style="font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; margin-top:2px;">Incorporated Legal Practice • Barristers & Solicitors</p>
+            <p style="font-size:11px; color:#475569; margin-top:6px;">Preston (HQ) • Werribee • Dandenong • ACT • Sydney</p>
+          </div>
+          <div style="text-align:right; font-size:11px;">
+            <div style="background:#0f172a; color:white; padding:3px 10px; border-radius:4px; font-weight:800; display:inline-block;">RCTI STATEMENT</div>
+            <div id="rctiInvoiceNo" style="font-weight:700; margin-top:6px; font-family:monospace;">RCTI-2026-0001</div>
+            <div style="color:#64748b; margin-top:2px;">Date: <span id="rctiDateIssued" style="font-weight:600; color:#0f172a;"></span></div>
+            <div style="color:#64748b;">Period: <span id="rctiPeriod" style="font-weight:600; color:#0f172a;">All Recorded Dates</span></div>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:16px; display:grid; grid-template-columns:1fr 1fr; font-size:11px;">
+          <div>
+            <span style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">Subcontractor / Payee</span>
+            <strong id="rctiSupplierName" style="font-size:13px; display:block; margin-top:2px;">—</strong>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">Tax Treatment</span>
+            <div style="font-weight:600;">Recipient Created Tax Invoice Agreement In Force</div>
+          </div>
+        </div>
+
+        <table style="width:100%; border:1px solid #e2e8f0; margin-bottom:16px;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>File #</th>
+              <th>Description</th>
+              <th style="text-align:right;">Receipt ($)</th>
+              <th style="text-align:right;">Disb ($)</th>
+              <th style="text-align:center;">Split %</th>
+              <th style="text-align:right;">Fee Share ($)</th>
+            </tr>
+          </thead>
+          <tbody id="rctiTableBody"></tbody>
+        </table>
+
+        <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+          <div style="width:240px; font-size:11px; display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; justify-content:space-between; color:#475569;">
+              <span>Taxable Fees (Ex. GST):</span>
+              <span id="rctiSubtotal">$0.00</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#475569;">
+              <span>GST Component (10%):</span>
+              <span id="rctiGST">$0.00</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-weight:800; font-size:13px; border-top:2px solid #0f172a; padding-top:6px; margin-top:4px;">
+              <span>Total Settlement Payable:</span>
+              <span id="rctiTotalPayable" style="color:#4f46e5;">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #e2e8f0; padding-top:10px; font-size:9px; color:#64748b; line-height:1.4;">
+          The recipient and supplier declare that this RCTI is issued pursuant to a formal agreement between the parties under A New Tax System (Goods and Services Tax) Act 1999.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://vhmibukossxgnuotvjvg.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_T9W8-L2viJbPsy1ZaoX7Cw_Sbs4PBk2";
+
+    let items = [];
+
+    function fmt(n) {
+      return (Number(n) || 0).toLocaleString("en-AU", { style: "currency", currency: "AUD" });
+    }
+
+    function openModal() {
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("modalTitle").textContent = "Add Ledger Entry";
+      document.getElementById("submitBtn").textContent = "Save Record";
+      document.getElementById("editId").value = "";
+      document.getElementById("entryForm").reset();
+      document.getElementById("fDate").value = new Date().toISOString().split("T")[0];
+      calculateSplitsLive();
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      document.getElementById("editId").value = "";
+      document.getElementById("entryForm").reset();
+    }
+
+    function calculateSplitsLive() {
+      const amt = parseFloat(document.getElementById("fAmt").value) || 0;
+      const disb = parseFloat(document.getElementById("fDisb").value) || 0;
+      const splitPct = parseFloat(document.getElementById("fSplitPct").value) || 0;
+      const manualPayout = parseFloat(document.getElementById("fPayout").value) || 0;
+
+      const netBase = Math.max(0, amt - disb);
+      let solShare = manualPayout > 0 ? manualPayout : (splitPct > 0 ? (netBase * (splitPct / 100)) : 0);
+      const firmShare = netBase - solShare;
+
+      document.getElementById("previewSolShare").textContent = fmt(solShare);
+      document.getElementById("previewFirmShare").textContent = fmt(firmShare);
+    }
+
+    async function loadData() {
+      items = JSON.parse(localStorage.getItem("btt_practice_ledger")) || [];
+      renderTable();
+      updateEmpDropdown();
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?select=*&order=date.desc`, {
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            items = data;
+            localStorage.setItem("btt_practice_ledger", JSON.stringify(items));
+            renderTable();
+            updateEmpDropdown();
+          }
+        }
+      } catch (e) {
+        console.warn("Using offline storage:", e);
+      }
+    }
+
+    function updateEmpDropdown() {
+      const emps = [...new Set(items.map(x => x.emp).filter(Boolean))].sort();
+      const el = document.getElementById("selEmp");
+      const rctiEl = document.getElementById("rctiEmpSelect");
+
+      if (el) {
+        const cur = el.value;
+        el.innerHTML = '<option value="ALL">All Fee Earners</option>';
+        emps.forEach(e => el.innerHTML += `<option value="${e}">${e}</option>`);
+        if (emps.includes(cur)) el.value = cur;
+      }
+
+      if (rctiEl) {
+        rctiEl.innerHTML = '';
+        emps.forEach(e => rctiEl.innerHTML += `<option value="${e}">${e}</option>`);
+      }
+    }
+
+    function renderTable() {
+      const q = (document.getElementById("searchBox")?.value || "").toLowerCase();
+      const emp = document.getElementById("selEmp")?.value || "ALL";
+      const loc = document.getElementById("selLoc")?.value || "ALL";
+
+      let filtered = items.filter(r => {
+        const matchQ = (r.client||"").toLowerCase().includes(q) ||
+                       (r.emp||"").toLowerCase().includes(q) ||
+                       (r.file_no||"").toLowerCase().includes(q) ||
+                       (r.invoice_no||"").toLowerCase().includes(q) ||
+                       (r.barr||"").toLowerCase().includes(q) ||
+                       (r.comm||"").toLowerCase().includes(q);
+        const matchEmp = emp === "ALL" || r.emp === emp;
+        const matchLoc = loc === "ALL" || r.loc === loc;
+        return matchQ && matchEmp && matchLoc;
+      });
+
+      let totGross = 0, totDisb = 0, totSolShare = 0, totFirmShare = 0;
+      const tbody = document.getElementById("tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="14" style="text-align:center; padding:30px; color:#94a3b8;">No records found. Click "+ New Entry" above to add one.</td></tr>`;
+      }
+
+      filtered.forEach(r => {
+        const amt = Number(r.amt) || 0;
+        const disb = Number(r.disb) || 0;
+        const payout = Number(r.payout) || 0;
+        const splitPct = Number(r.split_pct) || 0;
+
+        const netBase = Math.max(0, amt - disb);
+        let solShare = payout > 0 ? payout : (splitPct > 0 ? (netBase * (splitPct / 100)) : 0);
+        const firmShare = amt > 0 ? (netBase - solShare) : 0;
+
+        totGross += amt;
+        totDisb += disb;
+        totSolShare += solShare;
+        totFirmShare += firmShare;
+
+        tbody.innerHTML += `
+          <tr>
+            <td style="color:#64748b;">${r.date || "—"}</td>
+            <td style="font-family:monospace; font-weight:700;">${r.file_no || "—"}</td>
+            <td style="font-family:monospace; color:#4f46e5; font-weight:700;">${r.invoice_no || "—"}</td>
+            <td style="font-weight:700;">${r.emp || "—"}</td>
+            <td><span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600;">${r.loc || "—"}</span></td>
+            <td style="font-weight:500;">${r.client || "—"}</td>
+            <td style="text-align:right; font-weight:700; color:#059669;">${amt > 0 ? fmt(amt) : "—"}</td>
+            <td style="text-align:right; font-weight:700; color:#d97706;">${disb > 0 ? fmt(disb) : "—"}</td>
+            <td style="text-align:center; font-weight:700; color:#64748b;">${splitPct > 0 ? splitPct + '%' : '—'}</td>
+            <td style="text-align:right; font-weight:700; color:#2563eb; background:#eff6ff;">${solShare > 0 ? fmt(solShare) : "—"}</td>
+            <td style="text-align:right; font-weight:700; color:#047857; background:#ecfdf5;">${firmShare > 0 ? fmt(firmShare) : "—"}</td>
+            <td>${r.barr || "—"}</td>
+            <td style="color:#94a3b8; font-style:italic;">${r.comm || "—"}</td>
+            <td style="text-align:center;">
+              <button onclick="editEntry('${r.id}')" style="background:none; border:none; cursor:pointer; color:#4f46e5; font-size:12px; margin-right:6px;">✎</button>
+              <button onclick="delEntry('${r.id}')" style="background:none; border:none; cursor:pointer; color:#ef4444; font-size:12px;">🗑</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById("kpiGross").textContent = fmt(totGross);
+      document.getElementById("kpiDisb").textContent = fmt(totDisb);
+      document.getElementById("kpiSolicitor").textContent = fmt(totSolShare);
+      document.getElementById("kpiFirmShare").textContent = fmt(totFirmShare);
+      document.getElementById("recordCount").textContent = filtered.length;
+    }
+
+    function editEntry(id) {
+      const rec = items.find(x => String(x.id) === String(id));
+      if (!rec) return;
+
+      document.getElementById("editId").value = rec.id;
+      document.getElementById("modalTitle").textContent = "Amend Ledger Entry";
+      document.getElementById("submitBtn").textContent = "Update Entry";
+
+      document.getElementById("fDate").value = rec.date || "";
+      document.getElementById("fLoc").value = rec.loc || "Preston";
+      document.getElementById("fFileNo").value = rec.file_no || "";
+      document.getElementById("fInvoiceNo").value = rec.invoice_no || "";
+      document.getElementById("fEmp").value = rec.emp || "";
+      document.getElementById("fRef").value = rec.ref || "";
+      document.getElementById("fClient").value = rec.client || "";
+      document.getElementById("fAmt").value = rec.amt || "";
+      document.getElementById("fDisb").value = rec.disb || "";
+      document.getElementById("fSplitPct").value = rec.split_pct || "";
+      document.getElementById("fPayout").value = rec.payout || "";
+      document.getElementById("fBarr").value = rec.barr || "";
+      document.getElementById("fComm").value = rec.comm || "";
+
+      calculateSplitsLive();
+      document.getElementById("modal").style.display = "flex";
+    }
+
+    async function saveEntry(e) {
+      e.preventDefault();
+      const editId = document.getElementById("editId").value;
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Saving...";
+
+      const row = {
+        date: document.getElementById("fDate").value,
+        emp: document.getElementById("fEmp").value.trim(),
+        loc: document.getElementById("fLoc").value,
+        file_no: document.getElementById("fFileNo").value.trim(),
+        invoice_no: document.getElementById("fInvoiceNo").value.trim(),
+        ref: document.getElementById("fRef").value.trim(),
+        client: document.getElementById("fClient").value.trim(),
+        amt: parseFloat(document.getElementById("fAmt").value) || 0,
+        disb: parseFloat(document.getElementById("fDisb").value) || 0,
+        split_pct: parseFloat(document.getElementById("fSplitPct").value) || 0,
+        barr: document.getElementById("fBarr").value.trim(),
+        payout: parseFloat(document.getElementById("fPayout").value) || 0,
+        comm: document.getElementById("fComm").value.trim()
+      };
+
+      if (editId) {
+        const idx = items.findIndex(x => String(x.id) === String(editId));
+        if (idx !== -1) items[idx] = { ...items[idx], ...row };
+        fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${editId}`, {
+          method: "PATCH",
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(row)
+        }).catch(() => {});
+      } else {
+        const tempId = Date.now();
+        items.unshift({ id: tempId, ...row });
+        fetch(`${SUPABASE_URL}/rest/v1/ledger_entries`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(row)
+        }).catch(() => {});
+      }
+
+      localStorage.setItem("btt_practice_ledger", JSON.stringify(items));
+      submitBtn.disabled = false;
+      closeModal();
+      renderTable();
+      updateEmpDropdown();
+    }
+
+    async function delEntry(id) {
+      if (confirm("Delete this entry permanently?")) {
+        items = items.filter(x => String(x.id) !== String(id));
+        localStorage.setItem("btt_practice_ledger", JSON.stringify(items));
+        fetch(`${SUPABASE_URL}/rest/v1/ledger_entries?id=eq.${id}`, {
+          method: "DELETE",
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        }).catch(() => {});
+        renderTable();
+        updateEmpDropdown();
+      }
+    }
+
+    function openRCTIModal() {
+      document.getElementById("rctiModal").style.display = "flex";
+      document.getElementById("rctiDateIssued").textContent = new Date().toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
+      generateRCTIPreview();
+    }
+
+    function closeRCTIModal() {
+      document.getElementById("rctiModal").style.display = "none";
+    }
+
+    function generateRCTIPreview() {
+      const selectedEmp = document.getElementById("rctiEmpSelect").value;
+      const monthFilter = document.getElementById("rctiMonth").value;
+
+      if (!selectedEmp) return;
+
+      document.getElementById("rctiSupplierName").textContent = selectedEmp;
+      const invCode = `RCTI-${(monthFilter || "ALL").replace("-", "")}-${selectedEmp.substring(0, 3).toUpperCase()}-01`;
+      document.getElementById("rctiInvoiceNo").textContent = invCode;
+
+      let empRecords = items.filter(r => r.emp === selectedEmp);
+
+      if (monthFilter) {
+        empRecords = empRecords.filter(r => r.date && r.date.startsWith(monthFilter));
+        const [yr, mo] = monthFilter.split("-");
+        const dateObj = new Date(yr, mo - 1);
+        document.getElementById("rctiPeriod").textContent = dateObj.toLocaleString("en-AU", { month: "long", year: "numeric" });
+      } else {
+        document.getElementById("rctiPeriod").textContent = "All Recorded Periods";
+      }
+
+      const tbody = document.getElementById("rctiTableBody");
+      tbody.innerHTML = "";
+
+      let totalGross = 0;
+      let totalDisb = 0;
+      let totalPayable = 0;
+
+      if (empRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:16px; color:#94a3b8;">No records found for ${selectedEmp} in this period.</td></tr>`;
+      }
+
+      empRecords.forEach(r => {
+        const amt = Number(r.amt) || 0;
+        const disb = Number(r.disb) || 0;
+        const payout = Number(r.payout) || 0;
+        const splitPct = Number(r.split_pct) || 0;
+
+        const netBase = Math.max(0, amt - disb);
+        let solShare = payout > 0 ? payout : (splitPct > 0 ? (netBase * (splitPct / 100)) : 0);
+
+        totalGross += amt;
+        totalDisb += disb;
+        totalPayable += solShare;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${r.date || "—"}</td>
+            <td style="font-family:monospace; font-weight:700;">${r.file_no || "—"}</td>
+            <td>${r.client || r.comm || "Subcontractor Settlement"}</td>
+            <td style="text-align:right;">${amt > 0 ? fmt(amt) : "—"}</td>
+            <td style="text-align:right; color:#d97706;">${disb > 0 ? fmt(disb) : "—"}</td>
+            <td style="text-align:center;">${splitPct > 0 ? splitPct + '%' : '—'}</td>
+            <td style="text-align:right; font-weight:700;">${solShare > 0 ? fmt(solShare) : "—"}</td>
+          </tr>
+        `;
+      });
+
+      const gst = totalPayable / 11;
+      const exGst = totalPayable - gst;
+
+      document.getElementById("rctiSubtotal").textContent = fmt(exGst);
+      document.getElementById("rctiGST").textContent = fmt(gst);
+      document.getElementById("rctiTotalPayable").textContent = fmt(totalPayable);
+    }
+
+    function exportCSV() {
+      const headers = ["Date", "File #", "Invoice #", "Employee", "Location", "Referred By", "Client", "Amount Received", "Disbursement", "Split %", "Solicitor Share", "Firm Share", "Counsel", "Comments"];
+      const rows = items.map(r => {
+        const amt = Number(r.amt) || 0;
+        const disb = Number(r.disb) || 0;
+        const payout = Number(r.payout) || 0;
+        const splitPct = Number(r.split_pct) || 0;
+        const netBase = Math.max(0, amt - disb);
+        const solShare = payout > 0 ? payout : (splitPct > 0 ? (netBase * (splitPct / 100)) : 0);
+        const firmShare = amt > 0 ? (netBase - solShare) : 0;
+
+        return [
+          r.date, `"${r.file_no||''}"`, `"${r.invoice_no||''}"`, `"${r.emp}"`, `"${r.loc}"`, `"${r.ref||''}"`, `"${r.client||''}"`,
+          amt, disb, `${splitPct}%`, solShare, firmShare, `"${r.barr||''}"`, `"${r.comm||''}"`
+        ];
+      });
+
+      const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const a = document.createElement("a");
+      a.href = encodeURI(csv);
+      a.download = "BTT_Practice_Ledger.csv";
+      a.click();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
